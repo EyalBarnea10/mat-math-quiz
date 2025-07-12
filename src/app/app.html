@@ -522,7 +522,7 @@
         <div class="quiz-form-container">
           <h1 class="form-title">Math Quiz Setup</h1>
           
-          <form [formGroup]="quizForm" (ngSubmit)="startQuiz()" class="quiz-form">
+          <form [formGroup]="quizForm!" (ngSubmit)="startQuiz()" class="quiz-form" *ngIf="quizForm">
             <div class="form-group">
               <label for="gradeLevel">Please select level:</label>
               <select id="gradeLevel" formControlName="gradeLevel" class="form-select">
@@ -531,7 +531,7 @@
               </select>
             </div>
             
-            @if (quizForm.get('gradeLevel')?.value) {
+            @if (quizForm && quizForm.get('gradeLevel')?.value) {
               <div class="form-group">
                 <label for="subject">Select Subject:</label>
                 <select id="subject" formControlName="subject" class="form-select">
@@ -542,42 +542,54 @@
             
             <div class="form-actions">
               <button type="button" (click)="goBack()" class="btn btn-secondary">Back</button>
-              <button type="submit" [disabled]="!quizForm.valid || isLoading" class="btn btn-primary">
+              <button type="submit" [disabled]="!quizForm?.valid || isLoading" class="btn btn-primary">
                 @if (isLoading) {
-                  <span>Starting...</span>
+                  <span>Starting Quiz & Generating Questions...</span>
                 } @else {
                   <span>Start Quiz</span>
                 }
               </button>
             </div>
             
-            @if (quizStarted && quizConfig) {
+            @if (quizStarted && quizConfig && !quizQuestions) {
               <div class="quiz-status">
                 <h3>Quiz Started Successfully!</h3>
                 <div class="quiz-info">
-                  <p><strong>Grade Level:</strong> {{ quizConfig.quizConfig?.gradeLevel }}</p>
-                  <p><strong>Subject:</strong> {{ quizConfig.quizConfig?.subject }}</p>
-                  <p><strong>Difficulty:</strong> {{ quizConfig.quizConfig?.difficulty }}</p>
-                  <p><strong>Time Limit:</strong> {{ quizConfig.quizConfig?.timeLimit / 60 }} minutes</p>
+                  <p><strong>Grade Level:</strong> {{ quizConfig.gradeLevel }}</p>
+                  <p><strong>Subject:</strong> {{ quizConfig.subject }}</p>
+                  <p><strong>Difficulty:</strong> {{ quizConfig.difficulty }}</p>
+                  <p><strong>Time Limit:</strong> {{ quizConfig.timeLimit / 60 }} minutes</p>
                 </div>
-                <button type="button" (click)="generateQuizQuestions()" [disabled]="isLoading" class="btn btn-primary">
-                  @if (isLoading) {
-                    <span>Generating...</span>
-                  } @else {
-                    <span>Generate Questions</span>
-                  }
-                </button>
+                <p style="color: #2196F3; font-style: italic;">⏳ Generating questions automatically...</p>
               </div>
             }
             
-       @if (quizQuestions?.quizQuestions?.questions) 
+            @if (errorMessage) {
+              <div class="error-message" style="background: #ffebee; color: #c62828; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ef5350;">
+                <p><strong>Error:</strong> {{ errorMessage }}</p>
+                <button type="button" (click)="errorMessage = ''" class="btn btn-secondary" style="margin-top: 5px;">Dismiss</button>
+              </div>
+            }
+            
+       <!-- Debug Quiz Questions -->
+      
+       
+       @if (quizQuestions) 
        {
               <div class="quiz-questions">
                 <h3>Generated Quiz Questions</h3>
+                <p><strong>Debug - quizQuestions structure:</strong></p>
+                <p>quizQuestions type: {{ typeof quizQuestions }}</p>
+                
+                <p>quizQuestions.quizQuestions: {{ quizQuestions?.quizQuestions | json }}</p>
+                <p>quizQuestions.quizQuestions?.questions: {{ quizQuestions?.quizQuestions?.questions | json }}</p>
+                <p>getQuestionsArray(): {{ getQuestionsArray() | json }}</p>
+                <p>Questions count: {{ getQuestionsArray().length }}</p>
+                <hr>
                
                   <form (ngSubmit)="submitQuiz()" class="quiz-form">
                     <div class="questions-list">
-           @for (question of quizQuestions.quizQuestions.questions; let questionIdx = $index; track questionIdx) {
+           @for (question of getQuestionsArray(); let questionIdx = $index; track questionIdx) {
                                               <div class="question-item">
                           <h4>Question {{ questionIdx + 1 }}</h4>
                         <p>{{ question.question }}</p>
@@ -635,7 +647,7 @@
                       } @else {
                         <div class="quiz-results">
                           <h4>Quiz Results</h4>
-                          <p><strong>Score:</strong> {{ getQuizScore() }} out of {{ quizQuestions.quizQuestions.questions.length }}</p>
+                          <p><strong>Score:</strong> {{ getQuizScore() }} out of {{ getQuestionsArray().length }}</p>
                           <p><strong>Percentage:</strong> {{ getQuizPercentage() }}%</p>
                           <button type="button" (click)="resetQuiz()" class="btn btn-secondary">Try Again</button>
                         </div>
