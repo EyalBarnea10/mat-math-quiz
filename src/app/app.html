@@ -577,24 +577,15 @@
        @if (quizQuestions) 
        {
               <div class="quiz-questions">
-                <h3>Generated Quiz Questions</h3>
-                <p><strong>Debug - quizQuestions structure:</strong></p>
-                <p>quizQuestions type: {{ typeof quizQuestions }}</p>
-                
-                <p>quizQuestions.quizQuestions: {{ quizQuestions?.quizQuestions | json }}</p>
-                <p>quizQuestions.quizQuestions?.questions: {{ quizQuestions?.quizQuestions?.questions | json }}</p>
-                <p>getQuestionsArray(): {{ getQuestionsArray() | json }}</p>
-                <p>Questions count: {{ getQuestionsArray().length }}</p>
-                <hr>
-               
+                     
                   <form (ngSubmit)="submitQuiz()" class="quiz-form">
                     <div class="questions-list">
            @for (question of getQuestionsArray(); let questionIdx = $index; track questionIdx) {
                                               <div class="question-item">
                           <h4>Question {{ questionIdx + 1 }}</h4>
-                        <p>{{ question.question }}</p>
+                        <p>{{ question?.question }}</p>
                         <div class="options">
-                          @for (option of question.options; let optionIdx = $index; track optionIdx) {
+                          @for (option of question?.options || []; let optionIdx = $index; track optionIdx) {
                             <div class="option">
                               <input 
                                 type="radio" 
@@ -606,8 +597,8 @@
                               >
                               <label 
                                 [for]="'q' + questionIdx + 'opt' + optionIdx"
-                                [class.correct]="quizSubmitted && option === question.correctAnswer"
-                                [class.incorrect]="quizSubmitted && userAnswers[questionIdx] === option && option !== question.correctAnswer"
+                                [class.correct]="quizSubmitted && !!userAnswers[questionIdx] && option.split('.')[0] === question?.correctAnswer"
+                                [class.incorrect]="quizSubmitted && !!userAnswers[questionIdx] && userAnswers[questionIdx] === option && option.split('.')[0] !== question?.correctAnswer"
                                 [class.selected]="userAnswers[questionIdx] === option"
                               >
                                 {{ option }}
@@ -617,8 +608,10 @@
                           </div>
                           
                           @if (quizSubmitted) {
-                            <div class="feedback" [class.correct]="userAnswers[questionIdx] === question.correctAnswer" [class.incorrect]="userAnswers[questionIdx] !== question.correctAnswer">
-                              @if (userAnswers[questionIdx] === question.correctAnswer) {
+                            <div class="feedback"
+                              [class.correct]="!!userAnswers[questionIdx] && userAnswers[questionIdx].split('.')[0] === question?.correctAnswer"
+                              [class.incorrect]="!!userAnswers[questionIdx] && userAnswers[questionIdx].split('.')[0] !== question?.correctAnswer">
+                              @if (userAnswers[questionIdx] && userAnswers[questionIdx].split('.')[0] === question?.correctAnswer) {
                                 <div class="feedback-message correct">
                                   <span class="feedback-icon">✅</span>
                                   <strong>Correct!</strong>
@@ -630,8 +623,8 @@
                                 </div>
                               }
                               <div class="explanation">
-                                <p><strong>Correct Answer:</strong> {{ question.correctAnswer }}</p>
-                                <p><strong>Explanation:</strong> {{ question.explanation }}</p>
+                                <p><strong>Correct Answer:</strong> {{ question?.correctAnswer }}</p>
+                                <p><strong>Explanation:</strong> {{ question?.explanation }}</p>
                               </div>
                             </div>
                           }

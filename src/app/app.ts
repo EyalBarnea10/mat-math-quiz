@@ -231,7 +231,13 @@ export class App implements OnInit, OnDestroy {
     
     let score = 0;
     questions.forEach((question: any, index: number) => {
-      if (this.userAnswers[index] === question.correctAnswer) {
+      const userAnswer = this.userAnswers[index];
+      const correctAnswer = question.correctAnswer;
+      
+      // Extract the option letter from user's answer (e.g., "A. Pushing a ball" -> "A")
+      const userOptionLetter = userAnswer ? userAnswer.split('.')[0] : '';
+      
+      if (userOptionLetter === correctAnswer) {
         score++;
       }
     });
